@@ -1,0 +1,13 @@
+# Carpetas y archivos que se deben ignorar
+/venv/
+
+__pycache__/
+datasets_de_inicio/
+
+pruebas_funciones.ipynb
+
+datasets_post_limpieza/*
+# Excepto estos archivos
+!datasets_post_limpieza/df_games_clean.parquet.gzip
+!datasets_post_limpieza/df_items_clean.parquet.gzip
+!datasets_post_limpieza/df_reviews_sentiment.parquet.gzip
