@@ -9,7 +9,7 @@ from pydantic import BaseModel
 import uvicorn
 import os
 import numpy as np
-from sklearn.metrics.pairwise import cosine_similarity
+#from sklearn.metrics.pairwise import cosine_similarity
 
 
 # Pone nombre, descripción y versión a la API
@@ -64,32 +64,32 @@ def developer(desarrollador: str):
 # Modelo de aprendizaje
 
 # Calcula la matriz de similitud de coseno directamente sobre la columna de Sentimiento
-similarity_matrix = cosine_similarity(df_data_reviews[['sentiment_analysis']], df_data_reviews[['sentiment_analysis']])
+#similarity_matrix = cosine_similarity(df_data_reviews[['sentiment_analysis']], df_data_reviews[['sentiment_analysis']])
 
 
 # Sistema de recomendación item-item:
-@app.get("/recomendacion_juego/{item_id}")
-def obtener_recomendaciones(item_id: int):
+#@app.get("/recomendacion_juego/{item_id}")
+#def obtener_recomendaciones(item_id: int):
     n = 5
     # Obtiene el índice del juego en df_data_reviews
-    index_df_data_reviews = df_data_reviews[df_data_reviews['item_id'] == item_id].index[0]
+    #index_df_data_reviews = df_data_reviews[df_data_reviews['item_id'] == item_id].index[0]
 
     # Obtiene la fila correspondiente en la matriz de similitud
-    similar_scores = list(enumerate(similarity_matrix[index_df_data_reviews]))
+    #similar_scores = list(enumerate(similarity_matrix[index_df_data_reviews]))
 
     # Ordena los juegos por similitud
-    similar_scores = sorted(similar_scores, key=lambda x: x[1], reverse=True)
+    #similar_scores = sorted(similar_scores, key=lambda x: x[1], reverse=True)
 
     # Obtiene los índices de los juegos similares
-    top_indices = [i[0] for i in similar_scores[1:]]
+    #top_indices = [i[0] for i in similar_scores[1:]]
 
     # Obtiene los item_id de los juegos recomendados
-    recommendados_item_ids = df_data_reviews['item_id'].iloc[top_indices]
+    #recommendados_item_ids = df_data_reviews['item_id'].iloc[top_indices]
 
     # Obtiene los nombres (titles) de los juegos recomendados desde df_data_games
-    recommendados_juegos = df_data_games[df_data_games['id'].isin(recommendados_item_ids)]['title']
+    #recommendados_juegos = df_data_games[df_data_games['id'].isin(recommendados_item_ids)]['title']
 
     # Elimina duplicados
-    recommendados_juegos = recommendados_juegos.drop_duplicates().head(n)
+    #recommendados_juegos = recommendados_juegos.drop_duplicates().head(n)
 
-    return recommendados_juegos
+    #return recommendados_juegos
