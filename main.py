@@ -8,6 +8,7 @@ from unidecode import unidecode
 from pydantic import BaseModel
 import uvicorn
 import os
+import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 
 
@@ -23,6 +24,7 @@ current_directory = os.path.dirname(os.path.abspath(__file__)) if "__file__" in 
 file_path_reviews_sentiment = os.path.join(current_directory, "datasets_post_limpieza", "df_reviews_sentiment.parquet.gzip")
 file_path_items = os.path.join(current_directory, "datasets_post_limpieza", "df_items_clean.parquet.gzip")
 file_path_games = os.path.join(current_directory, "datasets_post_limpieza", "df_games_clean.parquet.gzip")
+#file_path_similarity_matrix = os.path.join(current_directory, "datasets_post_limpieza", "similarity_matrix.npz")
 # Cargar los archivos para realizar consultas
 data_reviews = ParquetFile(file_path_reviews_sentiment)
 df_data_reviews = data_reviews.to_pandas()
@@ -30,6 +32,7 @@ data_items = ParquetFile(file_path_items)
 df_data_items = data_items.to_pandas()
 data_games = ParquetFile(file_path_games)
 df_data_games = data_games.to_pandas()
+#similarity_matrix_recuperada = np.load(file_path_similarity_matrix)
 
 # End point de prueba
 @app.get("/")
@@ -62,6 +65,7 @@ def developer(desarrollador: str):
 
 # Calcula la matriz de similitud de coseno directamente sobre la columna de Sentimiento
 similarity_matrix = cosine_similarity(df_data_reviews[['sentiment_analysis']], df_data_reviews[['sentiment_analysis']])
+
 
 # Sistema de recomendación item-item:
 @app.get("/recomendacion_juego/{item_id}")
