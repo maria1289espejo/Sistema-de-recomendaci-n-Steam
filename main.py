@@ -38,9 +38,6 @@ app = FastAPI(title='Juegos recomendados',
 def read_root():
     return {"Bienvenido al sistema de recomendación de juegos"}
 
-@app.get("prueba/")
-def read_root():
-    return {"Bienvenido al sistema de recomendación de juegos"}
 
 @app.get("/developer/{desarrollador}")
 def developer(desarrollador: str):
@@ -64,6 +61,21 @@ def developer(desarrollador: str):
 
     return respuesta
 
+@app.get("/userdata/{User_id}")
+def userdata( User_id : str ):
+    return {"En proceso"}
+
+@app.get("/UserForGenre/{genero}")
+def UserForGenre( genero : str ):
+    return {"En proceso"}
+
+@app.get("/best_developer_year/{anio}")
+def best_developer_year( año : int ):
+    return {"En proceso"}
+
+@app.get("/developer_reviews_analysis/{desarrollador}")
+def developer_reviews_analysis( desarrolladora : str ):
+    return {"En proceso"}
 
 @app.get("/obtener_recomendaciones/{item_id}")
 def obtener_recomendaciones(item_id: int):
