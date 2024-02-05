@@ -9,13 +9,6 @@ from pydantic import BaseModel
 import uvicorn
 import os
 import numpy as np
-#from sklearn.metrics.pairwise import cosine_similarity
-
-
-# Pone nombre, descripción y versión a la API
-app = FastAPI(title='Juegos recomendados',
-              description='Sistema de recomendación de juegos de la plataforma Steam basado en tus gustos',
-              version='1.0')
 
 # Obtiene el directorio actual del archivo
 current_directory = os.path.dirname(os.path.abspath(__file__)) if "__file__" in locals() else os.getcwd()
@@ -32,10 +25,20 @@ data_items = ParquetFile(file_path_items)
 df_data_items = data_items.to_pandas()
 data_games = ParquetFile(file_path_games)
 df_data_games = data_games.to_pandas()
-#similarity_matrix_recuperada = np.load(file_path_similarity_matrix)
+
+
+# Pone nombre, descripción y versión a la API
+app = FastAPI(title='Juegos recomendados',
+              description='Sistema de recomendación de juegos de la plataforma Steam basado en tus gustos',
+              version='1.0')
+
 
 # End point de prueba
 @app.get("/")
+def read_root():
+    return {"Bienvenido al sistema de recomendación de juegos"}
+
+@app.get("prueba/")
 def read_root():
     return {"Bienvenido al sistema de recomendación de juegos"}
 
@@ -61,35 +64,39 @@ def developer(desarrollador: str):
 
     return respuesta
 
-# Modelo de aprendizaje
 
-# Calcula la matriz de similitud de coseno directamente sobre la columna de Sentimiento
-#similarity_matrix = cosine_similarity(df_data_reviews[['sentiment_analysis']], df_data_reviews[['sentiment_analysis']])
+@app.get("/obtener_recomendaciones/{item_id}")
+def obtener_recomendaciones(item_id: int):
+    # verifica si item_id esta en df_data_reviews
+    if item_id in df_data_reviews['item_id']:
+        # Filtrar el DataFrame para obtener solo las filas relacionadas con el item_id proporcionado
+        item_actual = df_data_reviews[df_data_reviews['item_id'] == item_id]
+        # Filtrar el DataFrame para excluir el item_id proporcionado
+        df_sin_item_actual = df_data_reviews[df_data_reviews['item_id'] != item_id]
+        # Seleccionar solo la columna de género del DataFrame df_genero
+        df_data_games_seleccionado = df_data_games[['id', 'genres']]
+        # Unir el DataFrame de género al DataFrame principal
+        df_sin_item_actual = pd.merge(df_sin_item_actual, df_data_games_seleccionado, left_on='item_id', right_on='id', how='inner')
+        # Eliminar la columna redundante 'id'
+        df_sin_item_actual = df_sin_item_actual.drop('id', axis=1) 
+        # Obtener el género del item actual
+        genero_actual = df_data_games[df_data_games['id'] == item_id]['genres'].values[0]
+        # Calcular la similitud basada en recommend, sentiment_analysis y género
+        similarities = []
+        for index, row in df_sin_item_actual.iterrows():
+            similarity = (item_actual['recommend'].values[0] == row['recommend']) and \
+                          (item_actual['sentiment_analysis'].values[0] == row['sentiment_analysis']) and \
+                          (genero_actual == row['genres'])
+            similarities.append(similarity)
 
-
-# Sistema de recomendación item-item:
-#@app.get("/recomendacion_juego/{item_id}")
-#def obtener_recomendaciones(item_id: int):
-    n = 5
-    # Obtiene el índice del juego en df_data_reviews
-    #index_df_data_reviews = df_data_reviews[df_data_reviews['item_id'] == item_id].index[0]
-
-    # Obtiene la fila correspondiente en la matriz de similitud
-    #similar_scores = list(enumerate(similarity_matrix[index_df_data_reviews]))
-
-    # Ordena los juegos por similitud
-    #similar_scores = sorted(similar_scores, key=lambda x: x[1], reverse=True)
-
-    # Obtiene los índices de los juegos similares
-    #top_indices = [i[0] for i in similar_scores[1:]]
-
-    # Obtiene los item_id de los juegos recomendados
-    #recommendados_item_ids = df_data_reviews['item_id'].iloc[top_indices]
-
-    # Obtiene los nombres (titles) de los juegos recomendados desde df_data_games
-    #recommendados_juegos = df_data_games[df_data_games['id'].isin(recommendados_item_ids)]['title']
-
-    # Elimina duplicados
-    #recommendados_juegos = recommendados_juegos.drop_duplicates().head(n)
-
-    #return recommendados_juegos
+        # Obtener los índices de los items más similares
+        indices_similares = [i for i, x in enumerate(similarities) if x]
+        # Obtener los item_id correspondientes a los índices encontrados
+        items_similares = df_sin_item_actual.loc[indices_similares, 'item_id'].tolist()
+        juegos_similares = df_data_games[df_data_games['id'].isin(items_similares)]['title']
+        #Elimina duplicados
+        juegos_similares = juegos_similares.drop_duplicates().head(5).to_list()
+        respuesta =  juegos_similares
+        
+    else: respuesta = f"{item_id} no está disponible, intenta con otro item_id."
+    return respuesta  
