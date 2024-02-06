@@ -62,8 +62,32 @@ def developer(desarrollador: str):
     return respuesta
 
 @app.get("/userdata/{User_id}")
-def userdata( User_id : str ):
-    return {"En proceso"}
+def userdata(User_id: str):
+    # Convertir User_id a cadena de caracteres
+    User_id = str(User_id)
+    
+    # Verificar si user_id está en la columna user_id de df_data_items
+    if User_id in df_data_items['user_id'].unique():
+        # Filtrar df_data_items por el user_id específico
+        usuario_filtrado_items = df_data_items[df_data_items['user_id'] == User_id]
+        # Obtener el valor de items_count para el user_id dado
+        items_cantidad = usuario_filtrado_items['items_count'].iloc[0]
+        # Obtiene los item_id de los juegos usados para el user_id dado
+        item_id_usados = usuario_filtrado_items['item_id'].tolist()
+        # Selecciona la columna price de df_data_games
+        precios_games = df_data_games[['id','price']]
+        # Une usuario_filtrado_items con precios_games
+        usuario_filtrado_items = pd.merge(usuario_filtrado_items, precios_games, left_on='item_id', right_on='id', how='inner')
+        dinero_gastado = usuario_filtrado_items['price'].sum()
+        # Filtrar df_data_reviews por el user_id específico
+        usuario_filtrado_reviews = df_data_reviews[df_data_reviews['user_id'] == User_id]
+        recommend_cantidad = usuario_filtrado_reviews['recommend'].count()
+        porcentaje_recomendación = recommend_cantidad*100/items_cantidad
+        respuesta = f"Usuario: {User_id}, Dinero gastado: {dinero_gastado} USD, % de recomendación: {porcentaje_recomendación:.2f} %, Cantidad de items: {items_cantidad}"
+    else:
+        respuesta = f"Usuario: {User_id} no está disponible. Intenta con otro id de usuario."
+        
+    return respuesta
 
 @app.get("/UserForGenre/{genero}")
 def UserForGenre( genero : str ):
