@@ -98,8 +98,33 @@ def best_developer_year( año : int ):
     return {"En proceso"}
 
 @app.get("/developer_reviews_analysis/{desarrollador}")
-def developer_reviews_analysis( desarrolladora : str ):
-    return {"En proceso"}
+def developer_reviews_analysis( desarrollador : str ):
+    desarrollador = desarrollador.lower()
+
+    # Verificar si el desarrollador está en la columna 'developer' de df_data_games
+    if desarrollador in df_data_games['developer'].str.lower().values:
+        # Filtrar la columna por desarrollador
+        df_desarrollador = df_data_games[df_data_games['developer'].str.lower() == desarrollador]
+
+        # Unir df_desarrollador y df_data_reviews en base a 'id' e 'item_id'
+        df_desarrollador = pd.merge(df_desarrollador, df_data_reviews[['item_id', 'sentiment_analysis']], left_on='id', right_on='item_id', how='inner') 
+
+        if df_desarrollador.empty:
+            respuesta = {desarrollador: ['Negative = 0', 'Positive = 0']}
+        else:
+            # Contar la cantidad de ocurrencias de cada valor de 'sentiment_analysis'
+            conteo_de_valores = df_desarrollador['sentiment_analysis'].value_counts()
+            # Obtener la cantidad de ocurrencias de 0 y 2, si no hay, devolver 0
+            cantidad_negativas = conteo_de_valores.get(0, 0)
+            cantidad_positivas = conteo_de_valores.get(2, 0)
+            # Construir el diccionario de respuesta
+            respuesta = {desarrollador: [f'Negative = {cantidad_negativas}', f'Positive = {cantidad_positivas}']}
+    else:
+        respuesta = {desarrollador: ['Negative = 0', 'Positive = 0']}
+
+    return respuesta
+
+# Sistema de recomendación
 
 @app.get("/obtener_recomendaciones/{item_id}")
 def obtener_recomendaciones(item_id: int):
