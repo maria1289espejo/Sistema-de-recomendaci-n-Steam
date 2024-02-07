@@ -94,8 +94,24 @@ def UserForGenre( genero : str ):
     return {"En proceso"}
 
 @app.get("/best_developer_year/{anio}")
-def best_developer_year( año : int ):
-    return {"En proceso"}
+def best_developer_year(año : int):
+    
+    # Verificar que el año este en la columna posted de df_data reviews
+    if año in (pd.to_datetime(df_data_reviews['posted'], yearfirst= True).dt.year).values:
+        # Filtra por el dataframe por el año indicado
+        df_año = df_data_reviews[pd.to_datetime(df_data_reviews['posted'], yearfirst=True).dt.year == año]
+        # Selecciona columna developer de df_data_games
+        df_desarrollador = df_data_games[['id', 'developer']]
+        # Une df_año y df_desarrollador
+        df_año_desarrollador = pd.merge(df_año, df_desarrollador, left_on='item_id', right_on='id', how='inner')
+        contar_true = df_año_desarrollador.groupby('developer')['recommend'].apply(lambda x: (x == 'True').sum()).reset_index(name='conteo_recomendados')
+        contar_positivas = df_año_desarrollador.groupby('developer')['sentiment_analysis'].apply(lambda x: (x == 2).sum()).reset_index(name='conteo_positivas')
+        contar_true_positivas = pd.merge(contar_true, contar_positivas, on='developer', how='inner')
+        top_recomendados = contar_true_positivas.sort_values('conteo_positivas', ascending=False).head(3)
+        respuesta = f"Puesto 1: {top_recomendados['developer'].iloc[0]}, Puesto 2: {top_recomendados['developer'].iloc[1]}, Puesto 3: {top_recomendados['developer'].iloc[2]}"
+    else:
+        respuesta = f"El {año} no esta disponible, intente con otro año"   
+    return respuesta
 
 @app.get("/developer_reviews_analysis/{desarrollador}")
 def developer_reviews_analysis( desarrollador : str ):
