@@ -95,6 +95,8 @@ Se realizó un [video](https://youtu.be/vA05xt5sSKA) que explica el funcionamien
 
 ## Estado del Proyecto
 
+Se logró realizar las 6 funciones propuestas para la API, sin embargo la función `def UserForGenre( genero : str )` aunque funciona en el editor y en el navegador local, no funciona en la web, cuando esto ocurre la plataforma de Render muestra un mensaje de error, el cual es ocasionado porque la función excede el consumo de memoria RAM durante su ejecución, por lo tanto seria relevante plantear el uso de otras librerias como dask que permiten distribuir los datos.
+
 ## Contacto
 
 [Linkedink](https://www.linkedin.com/in/alejandra-monroy-e/)
